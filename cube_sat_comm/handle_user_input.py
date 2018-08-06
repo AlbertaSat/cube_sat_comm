@@ -4,6 +4,7 @@ import time
 
 from cube_sat_comm.drawing import queue_message
 from cube_sat_comm.curses_state import prompt_for_input
+from cube_sat_comm.commands import execute_command
 
 MAX_TASK_TIME_SECS = 10
 
@@ -37,9 +38,11 @@ class MenuItem:
 
 def handle_input_loop():
     exit_state = ExitState()
+
     menu_items = [
         MenuItem('help', 'Display availaible commands', lambda: _print_menu(menu_items)),
         MenuItem('test', 'Run a fake task on another thread', _start_fake_task),
+        MenuItem('cmd', "Run a command", _execute_command),
         MenuItem('exit', 'Exit the program', exit_state.exit)
     ]
 
@@ -63,6 +66,9 @@ def _handle_given_user_input(menu_items):
             item.get_menu_func()()
             return
     queue_message("\"{}\" is not a valid option.".format(user_input))
+
+def _execute_command(name, *argv):
+    execute_command(name, argv)
 
 
 def _start_fake_task():

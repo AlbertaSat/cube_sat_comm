@@ -17,15 +17,24 @@ class CommandsState:
         cmds_path = pathlib.Path(_COMMANDS_PATH)
         _mk_cmd_dir_if_not_exists(cmds_path)
 
-        self._names_to_command_files = _load_in_commands(cmds_path)
+        self.names_to_command_files = _load_in_commands(cmds_path)
 
-    def execute_command(self, name, args):
-        if name not in self._names_to_command_files:
-            curses_print("The command \"{}\" does not exist.".format(name))
-            return
 
-        mod = self._names_to_command_files[name]
-        mod.run(args)
+_commands_state: CommandsState = None
+
+
+def init_commands():
+    global _commands_state
+    _commands_state = CommandsState()
+
+
+def execute_command(name, args):
+    if name not in _commands_state.names_to_command_files:
+        curses_print("The command \"{}\" does not exist.".format(name))
+        return
+
+    mod = _commands_state.names_to_command_files[name]
+    mod.run(args)
 
 
 def _mk_cmd_dir_if_not_exists(cmds_path):
