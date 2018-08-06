@@ -1,5 +1,9 @@
 import os
+import sys
 import pathlib
+import importlib
+
+from cube_sat_comm.curses_state import curses_print
 
 _COMMANDS_PATH = "commands/"
 
@@ -15,25 +19,40 @@ class CommandsState:
 
         self._names_to_command_files = _load_in_commands(cmds_path)
 
+    def execute_command(self, name, args):
+        if name not in self._names_to_command_files:
+            curses_print("The command \"{}\" does not exist.".format(name))
+            return
+
+        mod = self._names_to_command_files[name]
+        mod.run(args)
+
 
 def _mk_cmd_dir_if_not_exists(cmds_path):
     cmds_path.mkdir(parents=True, exist_ok=True)  # Does nothing if it already exists
 
 
 def _load_in_commands(root_dir):
-    name_to_cmd_map = {}
+    cmd_names_to_mods = {}
+    root_mod_path = os.path.dirname(sys.modules['__main__'].__file__)
 
     for curr_dir_name, _, file_paths in os.walk(root_dir):
         full_file_paths = map(lambda f_name: (f_name, os.path.join(curr_dir_name, f_name)), file_paths)
         command_files = filter(lambda f: _is_command_file(f), full_file_paths)
 
-        for (name, c_file_path) in command_files:
-            if name in name_to_cmd_map:
+        for (name, cmd_file_path) in command_files:
+            if name in cmd_names_to_mods:
                 raise DuplicateCommandException("""More than one command file named {} found."
-                                                ({} and {}))""".format(name, name_to_cmd_map[name], c_file_path))
+                                                ({} and {}))""".format(name, cmd_names_to_mods[name], cmd_file_path))
 
-            name_to_cmd_map[name] = c_file_path
-    return name_to_cmd_map
+            module = _import_module(cmd_file_path, root_mod_path)
+            cmd_names_to_mods[name] = module
+    return cmd_names_to_mods
+
+
+def _import_module(full_cmd_path, root_mod_path):
+    rel_path = full_cmd_path.relative_path(root_mod_path)
+    return importlib.import_module(rel_path)
 
 
 def _is_command_file(name_and_full_path):
