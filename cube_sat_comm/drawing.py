@@ -1,6 +1,7 @@
 from queue import Queue
 from threading import Thread, Event
-from curses_state import curses_print
+
+from cube_sat_comm.curses_state import curses_print
 
 _MAX_QUEUE_WAIT = 1.0
 

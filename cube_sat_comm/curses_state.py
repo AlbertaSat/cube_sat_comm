@@ -2,7 +2,7 @@ import os
 import curses
 from curses.textpad import Textbox
 
-import drawing
+from cube_sat_comm import drawing
 
 _INPUT_TEXT_NUM_LINES = 1
 _TITLE_HEIGHT = 1

@@ -2,8 +2,8 @@ import threading
 import random
 import time
 
-from drawing import queue_message
-from curses_state import prompt_for_input
+from cube_sat_comm.drawing import queue_message
+from cube_sat_comm.curses_state import prompt_for_input
 
 MAX_TASK_TIME_SECS = 10
 

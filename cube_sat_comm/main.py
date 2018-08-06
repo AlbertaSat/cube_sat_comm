@@ -1,8 +1,8 @@
 import curses
 
-import handle_user_input
-import drawing
-import curses_state
+from cube_sat_comm import handle_user_input
+from cube_sat_comm import drawing
+from cube_sat_comm import curses_state
 
 
 def main(main_window):
