@@ -2,11 +2,18 @@ import threading
 import random
 import time
 
+from result import Ok, Err
+
 from cube_sat_comm.drawing import queue_message
 from cube_sat_comm.curses_state import prompt_for_input
 from cube_sat_comm.commands import execute_command
 
 MAX_TASK_TIME_SECS = 10
+
+
+class InputState:
+    def __init__(self):
+        self.last_input = None
 
 
 class ExitState:
@@ -36,6 +43,9 @@ class MenuItem:
         return self._menu_func
 
 
+_input_state = InputState()
+
+
 def handle_input_loop():
     exit_state = ExitState()
 
@@ -59,16 +69,19 @@ def _print_menu(menu_items):
 
 
 def _handle_given_user_input(menu_items):
-    user_input = prompt_for_input().lower()
+    _input_state.last_input = prompt_for_input().lower()
+    menu_item_name = _input_state.last_input.split(' ')[0]
     queue_message("")
     for item in menu_items:
-        if user_input == item.get_input_str():
+        if menu_item_name == item.get_input_str():
             item.get_menu_func()()
             return
-    queue_message("\"{}\" is not a valid option.".format(user_input))
+    queue_message("\"{}\" is not a valid option.".format(_input_state.last_input))
 
-def _execute_command(name, *argv):
-    execute_command(name, argv)
+
+def _execute_command(name):
+    args = _input_state[1:]
+    execute_command(name, args)
 
 
 def _start_fake_task():
@@ -80,3 +93,5 @@ def _start_fake_task():
 def _fake_task(time_to_run):
     time.sleep(time_to_run)
     queue_message("Task finished!")
+
+
