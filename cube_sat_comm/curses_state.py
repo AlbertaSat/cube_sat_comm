@@ -1,5 +1,6 @@
 import os
 import curses
+from curses import ascii
 from curses.textpad import Textbox
 
 from cube_sat_comm import drawing
@@ -50,7 +51,7 @@ class CursesState:
         win.refresh()
 
 
-_state = None
+_state: CursesState = None
 
 
 def init_state(main_window):
@@ -61,10 +62,16 @@ def init_state(main_window):
 def prompt_for_input(prompt=None):
     if prompt is not None:
         _state.input_win.addstr(prompt)
-    _state.input_win_tb.edit()
+    _state.input_win_tb.edit(_handle_input)
     user_input = _state.input_win_tb.gather().strip()
     _queue_clear_input_tb()
     return user_input
+
+
+def _handle_input(ascii_val):
+    if ascii_val == ascii.DEL:
+        return curses.KEY_BACKSPACE
+    return ascii_val
 
 
 def _queue_clear_input_tb():
