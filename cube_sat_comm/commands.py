@@ -5,16 +5,14 @@ import importlib
 
 from cube_sat_comm.drawing import curses_print
 
-_COMMANDS_PATH = "commands/"
-
 
 class DuplicateCommandException(Exception):
     pass
 
 
 class CommandsState:
-    def __init__(self):
-        cmds_path = pathlib.Path(_COMMANDS_PATH)
+    def __init__(self, cmds_path):
+        cmds_path = pathlib.Path(cmds_path)
         _mk_cmd_dir_if_not_exists(cmds_path)
 
         self.names_to_command_files = _load_in_commands(cmds_path)
@@ -23,9 +21,9 @@ class CommandsState:
 _commands_state: CommandsState = None
 
 
-def init_commands():
+def init_commands(cmds_path):
     global _commands_state
-    _commands_state = CommandsState()
+    _commands_state = CommandsState(cmds_path)
 
 
 def execute_command(name, args):

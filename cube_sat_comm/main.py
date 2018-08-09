@@ -6,12 +6,14 @@ from cube_sat_comm import drawing
 from cube_sat_comm import curses_state
 from cube_sat_comm import commands
 
+_COMMANDS_PATH = "commands/"
+
 
 def main():
     drawing_handle = None
     try:
         drawing_handle = drawing.init_drawing_thread()
-        commands.init_commands()
+        commands.init_commands(_COMMANDS_PATH)
 
         curses.wrapper(_run)
 
