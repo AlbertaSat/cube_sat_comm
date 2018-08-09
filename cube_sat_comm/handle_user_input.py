@@ -4,7 +4,7 @@ import time
 
 from result import Ok, Err
 
-from cube_sat_comm.drawing import curses_print
+from cube_sat_comm.drawing import queue_message
 from cube_sat_comm.curses_state import prompt_for_input
 from cube_sat_comm.commands import execute_command
 
@@ -61,13 +61,13 @@ def handle_input_loop():
     while not exit_state.get_state():
         res = _handle_given_user_input(menu_items)
         if res.is_err():
-            curses_print("Error: {}".format(res.err()))
+            queue_message("Error: {}".format(res.err()))
 
 
 def _print_menu(menu_items):
-    curses_print("---------- Menu ----------")
+    queue_message("---------- Menu ----------")
     for item in menu_items:
-        curses_print("{} --> {}".format(item.get_input_str(), item.get_desc()))
+        queue_message("{} --> {}".format(item.get_input_str(), item.get_desc()))
     return Ok()
 
 
@@ -88,8 +88,8 @@ def _execute_command():
 
     name = menu_option_args[0]
     args = menu_option_args[1:]
-    execute_command(name, args)
-    return Ok()
+    res = execute_command(name, args)
+    return res
 
 
 def _start_fake_task():
@@ -101,7 +101,7 @@ def _start_fake_task():
 
 def _fake_task(time_to_run):
     time.sleep(time_to_run)
-    curses_print("Task finished!")
+    queue_message("Task finished!")
 
 
 def _exit(exit_state):

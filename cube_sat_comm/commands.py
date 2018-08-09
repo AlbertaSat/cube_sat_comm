@@ -3,7 +3,9 @@ import sys
 import pathlib
 import importlib
 
-from cube_sat_comm.drawing import curses_print
+import tests.other.test_commands
+
+from result import Err
 
 
 class DuplicateCommandException(Exception):
@@ -28,11 +30,11 @@ def init_commands(cmds_path):
 
 def execute_command(name, args):
     if name not in _commands_state.names_to_command_files:
-        curses_print("The command \"{}\" does not exist.".format(name))
-        return
+        return Err("The command \"{}\" does not exist.".format(name))
 
     mod = _commands_state.names_to_command_files[name]
-    mod.run(args)
+    res = mod.run(args)
+    return res
 
 
 def _mk_cmd_dir_if_not_exists(cmds_path):
@@ -43,30 +45,32 @@ def _load_in_commands(root_dir):
     cmd_names_to_mods = {}
     root_mod_path = os.path.dirname(sys.modules['__main__'].__file__)
 
-    for curr_dir_name, _, file_paths in os.walk(root_dir):
-        full_file_paths = map(lambda f_name: (f_name, os.path.join(curr_dir_name, f_name)), file_paths)
-        command_files = filter(lambda f: _is_command_file(f), full_file_paths)
+    for curr_dir_name, _, file_names in os.walk(root_dir):
+        full_file_paths = map(lambda f_name: pathlib.PurePath(curr_dir_name).joinpath(f_name), file_names)
+        cmd_file_paths = filter(lambda f_path: _is_command_file(f_path), full_file_paths)
 
-        for (name, cmd_file_path) in command_files:
+        for cmd_file_path in cmd_file_paths:
+            name = cmd_file_path.stem
             if name in cmd_names_to_mods:
                 raise DuplicateCommandException("""More than one command file named {} found."
                                                 ({} and {}))""".format(name, cmd_names_to_mods[name], cmd_file_path))
 
-            module = _import_module(cmd_file_path, root_mod_path)
+            module = _import_module(cmd_file_path)
             cmd_names_to_mods[name] = module
     return cmd_names_to_mods
 
 
-def _import_module(full_cmd_path, root_mod_path):
-    rel_path = full_cmd_path.relative_path(root_mod_path)
-    return importlib.import_module(rel_path)
+def _import_module(mod_path):
+    mod_path = str(mod_path).replace(".py", "").replace("/", ".")
+    return importlib.import_module(mod_path)
 
 
-def _is_command_file(name_and_full_path):
-    name, full_path = name_and_full_path
-    if name.suffix is not "py":
+def _is_command_file(cmd_path):
+    if cmd_path.suffix != ".py":
+        return False
+
+    if cmd_path.stem == "__init__":
         return False
 
     # TODO: Probably add more checks once we know more about how command files are going to work...
-
     return True
