@@ -67,10 +67,6 @@ def prompt_for_input(prompt=None):
     return user_input
 
 
-def _queue_curses_print(mess):
-    drawing.queue_task(lambda: curses_print(mess))
-
-
 def _queue_clear_input_tb():
     drawing.queue_task(lambda: _state.input_win.clear())
 

@@ -3,7 +3,7 @@ import sys
 import pathlib
 import importlib
 
-from cube_sat_comm.curses_state import curses_print
+from cube_sat_comm.drawing import curses_print
 
 _COMMANDS_PATH = "commands/"
 

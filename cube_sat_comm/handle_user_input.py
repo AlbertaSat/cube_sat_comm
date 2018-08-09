@@ -4,7 +4,7 @@ import time
 
 from result import Ok, Err
 
-from cube_sat_comm.drawing import queue_message
+from cube_sat_comm.drawing import curses_print
 from cube_sat_comm.curses_state import prompt_for_input
 from cube_sat_comm.commands import execute_command
 
@@ -53,45 +53,57 @@ def handle_input_loop():
         MenuItem('help', 'Display availaible commands', lambda: _print_menu(menu_items)),
         MenuItem('test', 'Run a fake task on another thread', _start_fake_task),
         MenuItem('cmd', "Run a command", _execute_command),
-        MenuItem('exit', 'Exit the program', exit_state.exit)
+        MenuItem('exit', 'Exit the program', lambda: _exit(exit_state))
     ]
 
     _print_menu(menu_items)
 
     while not exit_state.get_state():
-        _handle_given_user_input(menu_items)
+        res = _handle_given_user_input(menu_items)
+        if res.is_err():
+            curses_print("Error: {}".format(res.err()))
 
 
 def _print_menu(menu_items):
-    queue_message("---------- Menu ----------")
+    curses_print("---------- Menu ----------")
     for item in menu_items:
-        queue_message("{} --> {}".format(item.get_input_str(), item.get_desc()))
+        curses_print("{} --> {}".format(item.get_input_str(), item.get_desc()))
+    return Ok()
 
 
 def _handle_given_user_input(menu_items):
     _input_state.last_input = prompt_for_input().lower()
     menu_item_name = _input_state.last_input.split(' ')[0]
-    queue_message("")
     for item in menu_items:
         if menu_item_name == item.get_input_str():
-            item.get_menu_func()()
-            return
-    queue_message("\"{}\" is not a valid option.".format(_input_state.last_input))
+            res = item.get_menu_func()()
+            return res
+    return Err("\"{}\" is not a valid option.".format(menu_item_name))
 
 
-def _execute_command(name):
-    args = _input_state[1:]
+def _execute_command():
+    menu_option_args = _input_state.last_input.split(' ')[1:]
+    if len(menu_option_args) == 0:
+        return Err("No command name given.")
+
+    name = menu_option_args[0]
+    args = menu_option_args[1:]
     execute_command(name, args)
+    return Ok()
 
 
 def _start_fake_task():
     time_to_run = random.random() * MAX_TASK_TIME_SECS
     thread = threading.Thread(target=_fake_task, args=(time_to_run,))
     thread.start()
+    return Ok()
 
 
 def _fake_task(time_to_run):
     time.sleep(time_to_run)
-    queue_message("Task finished!")
+    curses_print("Task finished!")
 
 
+def _exit(exit_state):
+    exit_state.exit()
+    return Ok()
