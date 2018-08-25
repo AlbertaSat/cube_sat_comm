@@ -9,3 +9,8 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# For projects that use the Waf build system: https://waf.io/
+.waf*-*.*
+waf*-*.* # Windows
+.lock-waf_*_build
