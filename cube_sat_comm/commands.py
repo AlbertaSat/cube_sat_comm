@@ -3,9 +3,9 @@ import sys
 import pathlib
 import importlib
 
-import tests.other.test_commands
-
 from result import Err
+
+from cube_sat_comm import util
 
 
 class DuplicateCommandException(Exception):
@@ -15,7 +15,7 @@ class DuplicateCommandException(Exception):
 class CommandsState:
     def __init__(self, cmds_path):
         cmds_path = pathlib.Path(cmds_path)
-        _mk_cmd_dir_if_not_exists(cmds_path)
+        util.mk_dir_if_not_exists(cmds_path)
 
         self.names_to_command_files = _load_in_commands(cmds_path)
 
@@ -35,10 +35,6 @@ def execute_command(name, args):
     mod = _commands_state.names_to_command_files[name]
     res = mod.run(args)
     return res
-
-
-def _mk_cmd_dir_if_not_exists(cmds_path):
-    cmds_path.mkdir(parents=True, exist_ok=True)  # Does nothing if it already exists
 
 
 def _load_in_commands(root_dir):
