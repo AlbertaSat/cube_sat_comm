@@ -1,3 +1,6 @@
+# Project Specific
+build/
+
 .idea/
 __pycache__/
 
